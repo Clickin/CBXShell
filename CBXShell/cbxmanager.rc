@@ -1,0 +1,8 @@
+// Resource file for cbxmanager.exe
+// Embeds the application manifest and icon
+
+// Application icon (ID 1 is the default icon)
+1 ICON "../Assets/cbx_icon.ico"
+
+// Application manifest for Common Controls v6.0
+1 24 "cbxmanager.exe.manifest"

@@ -1,0 +1,47 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# Build artifacts - binaries (except in git LFS if needed)
+*.dll
+*.pdb
+*.exp
+*.lib
+*.obj
+*.exe
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+
+# Distribution artifacts
+/dist/
+*.msix
+*.appx
+*.appxbundle
+*.cer
+
+# MSIX packaging temporary files
+/Package/
+
+# Assets - actual image files (keep README.md)
+Assets/*.png
+Assets/*.jpg
+Assets/*.ico
+
+# Git backup and Claude settings
+.git.old/
+.claude/
+CLAUDE.md

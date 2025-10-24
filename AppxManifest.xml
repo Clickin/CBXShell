@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  xmlns:desktop7="http://schemas.microsoft.com/appx/manifest/desktop/windows10/7"
+  xmlns:desktop9="http://schemas.microsoft.com/appx/manifest/desktop/windows10/9"
+  xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+  IgnorableNamespaces="uap uap3 rescap desktop desktop7 desktop9 com">
+
+  <Identity
+    Name="CBXShell-rs"
+    Publisher="CN=T800 Productions"
+    Version="5.0.0.0"
+    ProcessorArchitecture="neutral" />
+
+  <Properties>
+    <DisplayName>CBXShell-rs - Comic Book Archive Thumbnails</DisplayName>
+    <PublisherDisplayName>T800 Productions</PublisherDisplayName>
+    <Logo>Assets\StoreLogo.png</Logo>
+    <Description>Modern Rust reimplementation of CBXShell. Windows Shell Extension that provides thumbnail preview and tooltips for ZIP and RAR image archives (CBZ/CBR formats). Memory-safe implementation with improved performance.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.22000.0" MaxVersionTested="10.0.26100.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-us" />
+    <Resource Language="ko-kr" />
+  </Resources>
+
+  <Applications>
+    <Application Id="CBXManager" Executable="CBXManager.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="CBXShell Manager"
+        Description="Configuration utility for CBXShell extension"
+        BackgroundColor="transparent"
+        Square150x150Logo="Assets\Square150x150Logo.png"
+        Square44x44Logo="Assets\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Assets\SplashScreen.png" />
+      </uap:VisualElements>
+
+      <Extensions>
+        <!-- COM Server Registration for Shell Extension -->
+        <com:Extension Category="windows.comServer">
+          <com:ComServer>
+            <com:SurrogateServer DisplayName="CBXShell Thumbnail Handler">
+              <com:Class Id="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" Path="CBXShell.dll" ThreadingModel="STA">
+                <com:ProgId Id="CBXShell.CBXShellClass" />
+              </com:Class>
+            </com:SurrogateServer>
+          </com:ComServer>
+        </com:Extension>
+
+        <!-- Thumbnail Handler for CBZ files -->
+        <desktop9:Extension Category="windows.fileExplorerClassicContextMenuHandler">
+          <desktop9:ExtensionHandler>
+            <desktop9:ExtensionHandlerType Type="Microsoft.Windows.ThumbnailHandler" Clsid="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" />
+            <desktop9:SupportedFileTypes>
+              <desktop9:FileType>.cbz</desktop9:FileType>
+              <desktop9:FileType>.cbr</desktop9:FileType>
+              <desktop9:FileType>.cb7</desktop9:FileType>
+              <desktop9:FileType>.zip</desktop9:FileType>
+              <desktop9:FileType>.rar</desktop9:FileType>
+              <desktop9:FileType>.7z</desktop9:FileType>
+            </desktop9:SupportedFileTypes>
+          </desktop9:ExtensionHandler>
+        </desktop9:Extension>
+
+        <!-- Approved Shell Extension (Required for machine-level registration) -->
+        <desktop7:Extension Category="windows.appExtension" Subcategory="windows.approvedShellExtension">
+          <desktop7:ApprovedShellExtension desktop7:Scope="machine">
+            <desktop7:ShellExtension desktop7:Clsid="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" />
+          </desktop7:ApprovedShellExtension>
+        </desktop7:Extension>
+      </Extensions>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <rescap:Capability Name="runFullTrust" />
+    <rescap:Capability Name="unvirtualizedResources" />
+  </Capabilities>
+</Package>

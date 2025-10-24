@@ -1,0 +1,73 @@
+[workspace]
+members = ["CBXShell"]
+resolver = "2"
+
+[workspace.package]
+version = "5.0.0"
+authors = ["CBXShell Contributors"]
+edition = "2021"
+license = "CPOL-1.02"
+rust-version = "1.70"
+
+[workspace.dependencies]
+# Windows COM and APIs
+windows = { version = "0.52", features = [
+    "implement",
+    "Win32_Foundation",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Registry",
+    "Win32_System_Memory",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_UI_Controls",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Gdi",
+    "Win32_Graphics_Imaging",
+    "Win32_Storage_FileSystem",
+    "Win32_System_SystemServices",
+    "Win32_Security",
+]}
+windows-core = "0.52"
+
+# Archive formats
+zip = "0.6"
+unrar = "0.5"
+sevenz-rust = "0.5"
+
+# Image processing
+image = { version = "0.25", default-features = false, features = ["webp", "jpeg", "png", "gif", "bmp", "tiff", "ico"] }
+fast_image_resize = "4.0"
+
+# Utilities
+natord = "1.0"
+winreg = "0.52"
+widestring = "1.0"
+
+# GUI framework (for manager binary)
+egui = "0.28"
+eframe = { version = "0.28", default-features = false, features = [
+    "default_fonts",
+    "glow",
+] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
