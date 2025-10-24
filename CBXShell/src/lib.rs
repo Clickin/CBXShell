@@ -11,7 +11,6 @@
 use windows::{
     core::*,
     Win32::Foundation::*,
-    Win32::System::Com::*,
 };
 use std::sync::atomic::{AtomicU32, Ordering};
 
@@ -134,10 +133,10 @@ pub extern "system" fn DllGetClassObject(
         *ppv = std::ptr::null_mut();
 
         // Validate CLSID matches our CBXShell class
-        if *rclsid != com::CLSID_CBXShell {
+        if *rclsid != com::CLSID_CBXSHELL {
             tracing::warn!("DllGetClassObject: CLASS_E_CLASSNOTAVAILABLE");
-            utils::debug_log::debug_log("ERROR: CLSID does not match CLSID_CBXShell");
-            utils::debug_log::debug_log(&format!("Expected: {:?}", com::CLSID_CBXShell));
+            utils::debug_log::debug_log("ERROR: CLSID does not match CLSID_CBXSHELL");
+            utils::debug_log::debug_log(&format!("Expected: {:?}", com::CLSID_CBXSHELL));
             return CLASS_E_CLASSNOTAVAILABLE;
         }
 

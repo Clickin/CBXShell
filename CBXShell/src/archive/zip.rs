@@ -15,6 +15,7 @@ use super::utils::{is_image_file, find_first_image, MAX_ENTRY_SIZE};
 /// ZIP archive handler
 pub struct ZipArchive {
     archive: RefCell<ZipReader<BufReader<File>>>,
+    #[allow(dead_code)] // Stored for potential future use (metadata, error messages)
     path: PathBuf,
 }
 
@@ -337,6 +338,7 @@ mod tests {
 /// ZIP archive handler for in-memory data (IStream support)
 pub struct ZipArchiveFromMemory {
     archive: RefCell<ZipReader<Cursor<Vec<u8>>>>,
+    #[allow(dead_code)] // Used in get_metadata() method for compressed_size
     data_size: usize,
 }
 

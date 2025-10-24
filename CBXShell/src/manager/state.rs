@@ -24,6 +24,7 @@ impl ExtensionConfig {
     }
 
     /// Create with both handlers enabled
+    #[allow(dead_code)] // Utility function for configuration
     pub fn enabled(extension: impl Into<String>) -> Self {
         Self {
             extension: extension.into(),
@@ -68,6 +69,7 @@ impl AppState {
     }
 
     /// Get extension config by extension name
+    #[allow(dead_code)] // Part of public API, may be used in future
     pub fn get_extension(&self, extension: &str) -> Option<&ExtensionConfig> {
         self.extensions.iter().find(|ext| ext.extension == extension)
     }

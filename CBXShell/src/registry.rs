@@ -10,16 +10,16 @@
 use crate::utils::error::{CbxError, Result};
 use windows::core::GUID;
 use windows::Win32::System::Registry::*;
-use windows::Win32::Foundation::ERROR_SUCCESS;
-use std::path::Path;
 
 /// CBXShell CLSID: {9E6ECB90-5A61-42BD-B851-D3297D9C7F39}
 pub const CLSID_CBXSHELL: GUID = GUID::from_u128(0x9E6ECB90_5A61_42BD_B851_D3297D9C7F39);
 
 /// IThumbnailProvider interface GUID (modern thumbnail API, replaces IExtractImage)
+#[allow(dead_code)] // May be used in future for interface registration
 const IID_ITHUMBNAILPROVIDER: &str = "{E357FCCD-A995-4576-B01F-234630154E96}";
 
 /// IQueryInfo interface GUID (tooltips)
+#[allow(dead_code)] // May be used in future for interface registration
 const IID_IQUERYINFO: &str = "{00021500-0000-0000-C000-000000000046}";
 
 /// Get the path to the current DLL
@@ -119,6 +119,7 @@ fn delete_key_recursive(hkey: HKEY, subkey: &str) -> Result<()> {
 }
 
 /// Register shell extension handler for a file extension
+#[allow(dead_code)] // Helper function for per-extension registration
 fn register_extension(extension: &str, clsid_str: &str) -> Result<()> {
     let base_key = format!("Software\\Classes\\{}", extension);
 
@@ -151,6 +152,7 @@ fn register_extension(extension: &str, clsid_str: &str) -> Result<()> {
 }
 
 /// Unregister shell extension handler for a file extension
+#[allow(dead_code)] // Helper function for per-extension unregistration
 fn unregister_extension(extension: &str) -> Result<()> {
     let base_key = format!("Software\\Classes\\{}\\shellex", extension);
     delete_key_recursive(HKEY_CURRENT_USER, &base_key)?;

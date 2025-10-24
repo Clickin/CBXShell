@@ -5,13 +5,14 @@ use windows::{
     Win32::Foundation::*,
     Win32::System::Com::*,
 };
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::AtomicU32;
 
 use super::CBXShell;
 
 /// ClassFactory for creating CBXShell instances
 #[implement(IClassFactory)]
 pub struct ClassFactory {
+    #[allow(dead_code)] // Used by COM infrastructure through #[implement] macro
     ref_count: AtomicU32,
 }
 

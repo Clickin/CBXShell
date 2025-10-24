@@ -12,13 +12,13 @@
 
   <Identity
     Name="CBXShell-rs"
-    Publisher="CN=T800 Productions"
+    Publisher="CN=CBXShell-rs Developer"
     Version="5.0.0.0"
     ProcessorArchitecture="neutral" />
 
   <Properties>
     <DisplayName>CBXShell-rs - Comic Book Archive Thumbnails</DisplayName>
-    <PublisherDisplayName>T800 Productions</PublisherDisplayName>
+    <PublisherDisplayName>CBXShell-rs</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Modern Rust reimplementation of CBXShell. Windows Shell Extension that provides thumbnail preview and tooltips for ZIP and RAR image archives (CBZ/CBR formats). Memory-safe implementation with improved performance.</Description>
   </Properties>

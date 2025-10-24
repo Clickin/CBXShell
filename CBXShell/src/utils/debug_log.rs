@@ -67,6 +67,7 @@ macro_rules! log_error {
 }
 
 /// Clear the debug log file (useful for testing)
+#[allow(dead_code)] // Utility function for debugging and testing
 pub fn clear_debug_log() {
     let _ = std::fs::remove_file(DEBUG_LOG_PATH);
 }

@@ -72,13 +72,12 @@ mod hbitmap;
 mod resizer;
 pub mod thumbnail;
 
-// Re-export public API
-pub use thumbnail::{create_thumbnail, create_thumbnail_with_size, ThumbnailConfig};
-pub use resizer::ResizeFilter;
+// Re-export public API (used by thumbnail module internally)
 
 /// Supported image file extensions
 ///
 /// This matches the C++ implementation in cbxArchive.h:553-567 plus new formats.
+#[allow(dead_code)] // Used by is_image_file function
 const SUPPORTED_EXTENSIONS: &[&str] = &[
     "jpg", "jpeg", "jpe", "jfif", // JPEG
     "png",                         // PNG
@@ -111,6 +110,7 @@ const SUPPORTED_EXTENSIONS: &[&str] = &[
 /// assert!(is_image_file("photo.webp")); // New format
 /// assert!(!is_image_file("readme.txt"));
 /// ```
+#[allow(dead_code)] // Part of public API, may be used in future
 pub fn is_image_file(filename: &str) -> bool {
     if let Some(ext) = std::path::Path::new(filename)
         .extension()

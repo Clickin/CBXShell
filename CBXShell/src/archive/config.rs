@@ -5,7 +5,7 @@
 use winreg::RegKey;
 use winreg::enums::*;
 
-const CONFIG_KEY_PATH: &str = "Software\\T800 Productions\\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}";
+const CONFIG_KEY_PATH: &str = "Software\\CBXShell-rs\\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}";
 const NO_SORT_VALUE: &str = "NoSort";
 
 /// Read the sorting preference from the registry
@@ -13,7 +13,7 @@ const NO_SORT_VALUE: &str = "NoSort";
 /// Returns `true` if images should be sorted alphabetically (default).
 /// Returns `false` if the first image encountered should be used.
 ///
-/// Registry location: HKCU\Software\T800 Productions\{GUID}\NoSort
+/// Registry location: HKCU\Software\CBXShell-rs\{GUID}\NoSort
 /// - Value 0 or missing = sort enabled (true)
 /// - Value 1 = sort disabled (false)
 pub fn should_sort_images() -> bool {

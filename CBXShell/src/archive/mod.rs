@@ -12,10 +12,13 @@ mod sevenz;
 mod rar;
 pub mod stream_reader;
 
-pub use utils::{is_image_file, natural_sort_cmp, find_first_image, MAX_ENTRY_SIZE};
+// Re-export utilities for internal use only (not used in public API)
 pub use config::should_sort_images;
+#[allow(dead_code)] // Used by open_archive function and part of public API
 pub use zip::ZipArchive;
+#[allow(dead_code)] // Used by open_archive function and part of public API
 pub use sevenz::SevenZipArchive;
+#[allow(dead_code)] // Used by open_archive function and part of public API
 pub use rar::RarArchive;
 pub use stream_reader::{read_stream_to_memory, detect_archive_type_from_bytes};
 
@@ -24,11 +27,13 @@ pub use stream_reader::{read_stream_to_memory, detect_archive_type_from_bytes};
 pub struct ArchiveEntry {
     pub name: String,
     pub size: u64,
+    #[allow(dead_code)] // Part of public API, may be used in future
     pub is_directory: bool,
 }
 
 /// Archive metadata
 #[derive(Debug, Clone)]
+#[allow(dead_code)] // Part of public API, may be used in future
 pub struct ArchiveMetadata {
     pub total_files: usize,
     pub image_count: usize,
@@ -46,6 +51,7 @@ pub enum ArchiveType {
 
 impl ArchiveType {
     /// Detect archive type from file extension
+    #[allow(dead_code)] // Part of public API, may be used in future
     pub fn from_extension(ext: &str) -> Option<Self> {
         match ext.to_lowercase().as_str() {
             "zip" | "cbz" | "epub" | "phz" => Some(Self::Zip),
@@ -55,6 +61,7 @@ impl ArchiveType {
         }
     }
 
+    #[allow(dead_code)] // Part of public API, may be used in future
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Zip => "ZIP",
@@ -65,6 +72,7 @@ impl ArchiveType {
 }
 
 /// Archive trait for different archive formats
+#[allow(dead_code)] // Part of public API, used by archive implementations
 pub trait Archive {
     /// Open an archive from a file path
     fn open(path: &Path) -> Result<Box<dyn Archive>>
@@ -85,6 +93,7 @@ pub trait Archive {
 }
 
 /// Open an archive of any supported type from a file path
+#[allow(dead_code)] // Part of public API, may be used in future
 pub fn open_archive(path: &Path) -> Result<Box<dyn Archive>> {
     let extension = path
         .extension()

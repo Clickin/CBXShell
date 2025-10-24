@@ -22,6 +22,7 @@ use std::sync::Mutex;
 /// - IQueryInfo: Tooltips (unchanged)
 #[implement(IThumbnailProvider, IInitializeWithStream, IQueryInfo)]
 pub struct CBXShell {
+    #[allow(dead_code)] // Used by COM infrastructure through #[implement] macro
     ref_count: AtomicU32,
     stream: Mutex<Option<IStream>>,
 }

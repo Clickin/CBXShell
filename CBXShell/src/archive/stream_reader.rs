@@ -4,7 +4,6 @@
 //! instead of file paths, which is required for IThumbnailProvider.
 
 use windows::Win32::System::Com::*;
-use windows::Win32::Foundation::*;
 use crate::utils::error::{CbxError, Result};
 use crate::archive::ArchiveType;
 

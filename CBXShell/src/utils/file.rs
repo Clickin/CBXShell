@@ -23,6 +23,7 @@ use crate::archive::ArchiveType;
 /// # Windows API
 /// Uses GetFileTime to retrieve the file's last write time.
 /// This matches the C++ behavior for thumbnail cache validation.
+#[allow(dead_code)] // Part of public API, may be used in future
 pub fn get_file_modified_time(path: &Path) -> Result<FILETIME> {
     unsafe {
         // Convert path to wide string for Windows API
@@ -80,6 +81,7 @@ pub fn get_file_modified_time(path: &Path) -> Result<FILETIME> {
 /// - ZIP: .zip, .cbz, .epub, .phz
 /// - RAR: .rar, .cbr
 /// - 7-Zip: .7z, .cb7
+#[allow(dead_code)] // Part of public API, may be used in future
 pub fn detect_archive_type(path: &Path) -> Result<ArchiveType> {
     let extension = path
         .extension()

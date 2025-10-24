@@ -1,6 +1,5 @@
 ; CBXShell NSIS Installer Script
 ; Provides thumbnail previews for comic book archives (CBZ/CBR/CB7)
-; Copyright (C) T800 Productions
 ;
 ; Build with: makensis.exe /DARCH=x64 installer.nsi
 ;         or: makensis.exe /DARCH=x86 installer.nsi
@@ -38,11 +37,10 @@
 
 !define PRODUCT_NAME "CBXShell-rs"
 !define PRODUCT_VERSION "5.0.0"
-!define PRODUCT_PUBLISHER "T800 Productions"
 !define PRODUCT_WEB_SITE "https://github.com/Clickin/CBXShell-rs"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
-!define PRODUCT_SETTINGS_KEY "Software\T800 Productions\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}"
+!define PRODUCT_SETTINGS_KEY "Software\CBXShell-rs\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}"
 
 ; CLSID for COM registration
 !define CLSID "{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}"
@@ -61,8 +59,6 @@ RequestExecutionLevel admin
 VIProductVersion "${PRODUCT_VERSION}.0"
 VIAddVersionKey "ProductName" "${PRODUCT_NAME}"
 VIAddVersionKey "Comments" "Windows Shell Extension for comic book archive thumbnails"
-VIAddVersionKey "CompanyName" "${PRODUCT_PUBLISHER}"
-VIAddVersionKey "LegalCopyright" "Copyright (C) T800 Productions"
 VIAddVersionKey "FileDescription" "${PRODUCT_NAME} Installer"
 VIAddVersionKey "FileVersion" "${PRODUCT_VERSION}"
 VIAddVersionKey "ProductVersion" "${PRODUCT_VERSION}"
@@ -185,7 +181,6 @@ unrar_done:
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\Uninstall.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayIcon" "$INSTDIR\CBXManager.exe"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
-  WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "InstallLocation" "$INSTDIR"
   WriteRegDWORD ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "NoModify" 1

@@ -11,7 +11,7 @@ use winreg::enums::*;
 const CLSID_STR: &str = "{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}";
 
 /// Configuration registry path
-const CONFIG_KEY_PATH: &str = "Software\\T800 Productions\\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}";
+const CONFIG_KEY_PATH: &str = "Software\\CBXShell-rs\\{9E6ECB90-5A61-42BD-B851-D3297D9C7F39}";
 
 /// IThumbnailProvider interface GUID
 const IID_ITHUMBNAILPROVIDER: &str = "{E357FCCD-A995-4576-B01F-234630154E96}";

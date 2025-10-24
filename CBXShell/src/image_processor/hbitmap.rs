@@ -166,6 +166,7 @@ pub fn create_hbitmap_from_bgra(
 /// # Returns
 /// * `Ok(HBITMAP)` - Successfully created bitmap handle
 /// * `Err(CbxError)` - Conversion failed
+#[allow(dead_code)] // Part of public API, may be used in future
 pub fn create_hbitmap_from_rgba(
     rgba_data: &[u8],
     width: u32,
