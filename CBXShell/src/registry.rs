@@ -34,6 +34,15 @@ fn get_module_path() -> Result<String> {
     let hmodule = crate::get_dll_module()
         .ok_or_else(|| CbxError::Registry("DLL module handle not initialized".to_string()))?;
 
+    // UNAVOIDABLE UNSAFE: GetModuleFileNameW is a Windows FFI call
+    // Why unsafe is required:
+    // 1. Foreign Function Interface: Calling C functions from kernel32.dll
+    // 2. No safe alternative: Only way to get DLL path on Windows
+    // 3. Buffer management: Must pass mutable buffer to C function
+    // Safety guarantees:
+    // - hmodule is validated (non-null) above
+    // - Buffer size is MAX_PATH (Windows API contract)
+    // - Return value checked for errors (len == 0)
     unsafe {
         let mut buffer = vec![0u16; MAX_PATH as usize];
         let len = GetModuleFileNameW(hmodule, &mut buffer);
@@ -49,6 +58,15 @@ fn get_module_path() -> Result<String> {
 
 /// Create a registry key (helper function)
 fn create_key(hkey: HKEY, subkey: &str) -> Result<HKEY> {
+    // UNAVOIDABLE UNSAFE: RegCreateKeyExW is a Windows FFI call
+    // Why unsafe is required:
+    // 1. Foreign Function Interface: Windows Registry API (advapi32.dll)
+    // 2. No safe alternative: Registry manipulation is Windows-specific
+    // 3. Raw pointer passing: PCWSTR requires pointer to null-terminated UTF-16
+    // Safety guarantees:
+    // - subkey_wide has null terminator (chain(Some(0)))
+    // - hkey is validated by caller (from Windows API)
+    // - Error handling via Result propagation
     unsafe {
         let subkey_wide: Vec<u16> = subkey.encode_utf16().chain(Some(0)).collect();
         let mut result_key = HKEY::default();
@@ -71,31 +89,45 @@ fn create_key(hkey: HKEY, subkey: &str) -> Result<HKEY> {
 
 /// Set a registry string value (helper function)
 fn set_string_value(hkey: HKEY, value_name: Option<&str>, data: &str) -> Result<()> {
+    let value_name_wide: Vec<u16> = value_name
+        .map(|s| s.encode_utf16().chain(Some(0)).collect())
+        .unwrap_or_else(|| vec![0]);
+
+    let data_wide: Vec<u16> = data.encode_utf16().chain(Some(0)).collect();
+
+    // SAFETY IMPROVEMENT: Convert u16 to bytes safely without raw pointers
+    // Previously used std::slice::from_raw_parts which is unsafe
+    // Now using safe iterator-based conversion with explicit endianness
+    let data_bytes: Vec<u8> = data_wide
+        .iter()
+        .flat_map(|&w| w.to_le_bytes())
+        .collect();
+
+    // UNAVOIDABLE UNSAFE: RegSetValueExW is a Windows FFI call
+    // The Windows Registry API requires calling C functions which is inherently unsafe
     unsafe {
-        let value_name_wide: Vec<u16> = value_name
-            .map(|s| s.encode_utf16().chain(Some(0)).collect())
-            .unwrap_or_else(|| vec![0]);
-
-        let data_wide: Vec<u16> = data.encode_utf16().chain(Some(0)).collect();
-        let data_bytes = std::slice::from_raw_parts(
-            data_wide.as_ptr() as *const u8,
-            data_wide.len() * 2,
-        );
-
         RegSetValueExW(
             hkey,
             windows::core::PCWSTR(value_name_wide.as_ptr()),
             0,
             REG_SZ,
-            Some(data_bytes),
+            Some(&data_bytes),
         ).map_err(|e| CbxError::Windows(e))?;
-
-        Ok(())
     }
+
+    Ok(())
 }
 
 /// Delete a registry key recursively
 fn delete_key_recursive(hkey: HKEY, subkey: &str) -> Result<()> {
+    // UNAVOIDABLE UNSAFE: RegDeleteTreeW is a Windows FFI call
+    // Why unsafe is required:
+    // 1. Foreign Function Interface: Windows Registry API (advapi32.dll)
+    // 2. No safe alternative: Recursive registry deletion is Windows-specific
+    // 3. Raw pointer passing: PCWSTR requires pointer to UTF-16 string
+    // Safety guarantees:
+    // - subkey_wide has null terminator
+    // - Error codes properly handled (FILE_NOT_FOUND is acceptable)
     unsafe {
         let subkey_wide: Vec<u16> = subkey.encode_utf16().chain(Some(0)).collect();
 
