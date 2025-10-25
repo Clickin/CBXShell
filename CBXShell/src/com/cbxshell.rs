@@ -115,8 +115,7 @@ impl CBXShell {
 
         // Step 6b: Verify image format using magic headers
         crate::utils::debug_log::debug_log("Step 6b: Verifying image format with magic headers...");
-        use crate::archive::utils::verify_image_data;
-        verify_image_data(&image_data, &entry.name)?;
+        crate::archive::verify_image_data(&image_data, &entry.name)?;
         crate::utils::debug_log::debug_log("Step 6b: Image format verification passed");
 
         // Step 7: Use requested size from IThumbnailProvider::GetThumbnail

@@ -73,9 +73,6 @@ mod resizer;
 pub mod thumbnail;
 pub mod magic;
 
-// Re-export public API (used by thumbnail module internally)
-pub use magic::{detect_image_format, verify_image_format, is_image_data, ImageFormat};
-
 /// Supported image file extensions
 ///
 /// This matches the C++ implementation in cbxArchive.h:553-567 plus new formats.
