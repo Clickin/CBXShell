@@ -489,13 +489,13 @@ Memory:               ~2MB
 
 ## Implementation Checklist
 
-- [ ] Implement `SevenZipArchiveFromStream` with IStream clone approach
-- [ ] Update `open_archive_from_stream()` to use new handler
+- [x] Implement `SevenZipArchiveFromStream` with IStream clone approach
+- [x] Update `open_archive_from_stream()` to use new handler
 - [ ] Add unit tests for 7z streaming
 - [ ] Benchmark with real 7z files
 - [ ] Compare vs memory-based approach
 - [ ] Verify memory usage is reduced
-- [ ] Update documentation
+- [x] Update documentation
 - [ ] (Optional) Implement Phase 2 optimization with cached reader
 
 ---
