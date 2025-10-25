@@ -167,7 +167,9 @@ Section "CBXShell (Required)" SecCore
   ; Note: UnRAR support is statically linked via unrar crate, no separate DLL needed
 
   ; Create registry entries for shell extension settings
-  WriteRegDWORD HKCU "${PRODUCT_SETTINGS_KEY}" "NoSort" 0
+  ; NoSort=1 (default): Fast mode - return first image found (recommended for large archives)
+  ; NoSort=0: Sort alphabetically - slower but predictable order
+  WriteRegDWORD HKCU "${PRODUCT_SETTINGS_KEY}" "NoSort" 1
 
   ; Write uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"

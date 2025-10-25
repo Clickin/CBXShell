@@ -151,10 +151,10 @@ fn read_sort_setting() -> Result<bool> {
         Ok(key) => {
             match key.get_value::<u32, _>("NoSort") {
                 Ok(value) => Ok(value == 0),  // NoSort=0 means sort enabled
-                Err(_) => Ok(true),  // Default: sorting enabled
+                Err(_) => Ok(false),  // Default: sorting disabled (NoSort=1) for better performance
             }
         }
-        Err(_) => Ok(true),  // Default: sorting enabled
+        Err(_) => Ok(false),  // Default: sorting disabled (NoSort=1) for better performance
     }
 }
 

@@ -10,27 +10,27 @@ const NO_SORT_VALUE: &str = "NoSort";
 
 /// Read the sorting preference from the registry
 ///
-/// Returns `true` if images should be sorted alphabetically (default).
-/// Returns `false` if the first image encountered should be used.
+/// Returns `true` if images should be sorted alphabetically.
+/// Returns `false` if the first image encountered should be used (default for performance).
 ///
 /// Registry location: HKCU\Software\CBXShell-rs\{GUID}\NoSort
-/// - Value 0 or missing = sort enabled (true)
-/// - Value 1 = sort disabled (false)
+/// - Value 0 = sort enabled (true)
+/// - Value 1 or missing = sort disabled (false, default)
 pub fn should_sort_images() -> bool {
     match read_no_sort_setting() {
         Ok(no_sort) => !no_sort,  // Invert: NoSort=0 means sort=true
         Err(_) => {
-            // Default to sorting if registry read fails
-            tracing::debug!("Failed to read NoSort setting, defaulting to sorted mode");
-            true
+            // Default to NOT sorting for better performance with large archives
+            tracing::debug!("Failed to read NoSort setting, defaulting to unsorted mode (fast)");
+            false
         }
     }
 }
 
 /// Read the NoSort registry value
 ///
-/// Returns `Ok(true)` if NoSort=1 (sorting disabled)
-/// Returns `Ok(false)` if NoSort=0 or missing (sorting enabled)
+/// Returns `Ok(true)` if NoSort=1 or missing (sorting disabled, default)
+/// Returns `Ok(false)` if NoSort=0 (sorting enabled)
 fn read_no_sort_setting() -> Result<bool, std::io::Error> {
     let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 
@@ -38,10 +38,10 @@ fn read_no_sort_setting() -> Result<bool, std::io::Error> {
         Ok(key) => {
             match key.get_value::<u32, _>(NO_SORT_VALUE) {
                 Ok(value) => Ok(value != 0),  // NonZero = true (don't sort)
-                Err(_) => Ok(false),  // Missing value = false (do sort)
+                Err(_) => Ok(true),  // Missing value = true (don't sort, for performance)
             }
         }
-        Err(_) => Ok(false),  // Missing key = false (do sort)
+        Err(_) => Ok(true),  // Missing key = true (don't sort, for performance)
     }
 }
 
@@ -83,7 +83,7 @@ mod tests {
             assert_eq!(should_sort_images(), false);
         }
 
-        // Cleanup: restore to default (sorting enabled)
-        let _ = set_should_sort_images(true);
+        // Cleanup: restore to default (sorting disabled for performance)
+        let _ = set_should_sort_images(false);
     }
 }

@@ -56,7 +56,7 @@ impl Default for AppState {
                 ExtensionConfig::new(".7z"),
                 ExtensionConfig::new(".cb7"),
             ],
-            sort_enabled: true,  // Default: sort enabled (NoSort=0)
+            sort_enabled: false,  // Default: sort disabled (NoSort=1) for better performance with large archives
             dll_registered: false,
         }
     }
@@ -112,7 +112,7 @@ mod tests {
     fn test_app_state_default() {
         let state = AppState::default();
         assert_eq!(state.extensions.len(), 6);
-        assert!(state.sort_enabled);
+        assert!(!state.sort_enabled);  // Default: sort disabled for performance
         assert!(!state.dll_registered);
         assert!(!state.has_any_handlers_enabled());
     }
