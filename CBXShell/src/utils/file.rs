@@ -25,6 +25,22 @@ use crate::archive::ArchiveType;
 /// This matches the C++ behavior for thumbnail cache validation.
 #[allow(dead_code)] // Part of public API, may be used in future
 pub fn get_file_modified_time(path: &Path) -> Result<FILETIME> {
+    // UNAVOIDABLE UNSAFE: Windows File API operations
+    // Why unsafe is required:
+    // 1. CreateFileW, GetFileTime, CloseHandle are Windows FFI (kernel32.dll)
+    // 2. No safe alternative: FILETIME structure is Windows-specific
+    // 3. Handle management: Must explicitly close file handle
+    //
+    // Why std::fs::metadata is not sufficient:
+    // - Rust's metadata returns SystemTime, not FILETIME
+    // - Windows Shell Extensions require exact FILETIME format
+    // - No safe conversion between SystemTime and FILETIME
+    //
+    // Safety guarantees:
+    // - Path validated and converted to wide string
+    // - Handle validity checked (INVALID_HANDLE_VALUE)
+    // - CloseHandle called in all code paths
+    // - Error propagation via Result
     unsafe {
         // Convert path to wide string for Windows API
         let wide_path = U16CString::from_os_str(path.as_os_str())

@@ -11,6 +11,16 @@ pub fn prompt_restart_explorer() -> bool {
         .encode_utf16()
         .collect::<Vec<_>>();
 
+    // UNAVOIDABLE UNSAFE: MessageBoxW is a Windows UI FFI call
+    // Why unsafe is required:
+    // 1. FFI call to user32.dll (Windows User Interface API)
+    // 2. No safe alternative: Native modal dialogs are Windows-specific
+    // 3. Raw pointer to UTF-16 string required by Windows API
+    //
+    // Safety guarantees:
+    // - Strings are null-terminated (\0)
+    // - Pointers are valid (from Vec we own)
+    // - MessageBoxW doesn't modify the strings
     unsafe {
         MessageBoxW(
             None,
