@@ -14,6 +14,7 @@ pub mod stream_reader;
 
 // Re-export utilities for internal use only (not used in public API)
 pub use config::should_sort_images;
+pub use utils::verify_image_data;
 #[allow(dead_code)] // Used by open_archive function and part of public API
 pub use zip::ZipArchive;
 #[allow(dead_code)] // Used by open_archive function and part of public API

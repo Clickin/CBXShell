@@ -113,6 +113,12 @@ impl CBXShell {
         tracing::debug!("Extracted {} bytes of image data", image_data.len());
         crate::utils::debug_log::debug_log(&format!("Step 6: Extracted {} bytes of image data", image_data.len()));
 
+        // Step 6b: Verify image format using magic headers
+        crate::utils::debug_log::debug_log("Step 6b: Verifying image format with magic headers...");
+        use crate::archive::utils::verify_image_data;
+        verify_image_data(&image_data, &entry.name)?;
+        crate::utils::debug_log::debug_log("Step 6b: Image format verification passed");
+
         // Step 7: Use requested size from IThumbnailProvider::GetThumbnail
         // IThumbnailProvider provides cx (max dimension), we create square thumbnails
         let thumbnail_size = if cx == 0 { 256 } else { cx };
