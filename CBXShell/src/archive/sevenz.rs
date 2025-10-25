@@ -3,7 +3,7 @@
 ///! Supports 7z and CB7 formats using the `sevenz-rust` crate
 
 use std::fs::File;
-use std::io::Cursor;
+use std::io::{Cursor, Read, Seek};
 use std::path::{Path, PathBuf};
 use sevenz_rust::{SevenZReader, Password};
 
@@ -529,3 +529,8 @@ impl Archive for SevenZipArchiveFromMemory {
         ArchiveType::SevenZip
     }
 }
+
+// NOTE: 7z streaming support is deferred due to sevenz-rust API constraints
+// The library requires mutable reader access which conflicts with Archive trait's &self
+// For now, 7z continues to use the memory-based approach
+// This can be revisited in future with architectural changes (e.g., RefCell<R>)
