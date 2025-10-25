@@ -6,6 +6,7 @@
 use windows::Win32::System::Com::*;
 use crate::utils::error::{CbxError, Result};
 use crate::archive::ArchiveType;
+use std::io::{self, Read, Seek, SeekFrom};
 
 /// Maximum buffer size for reading from IStream (10GB)
 /// We only extract the first image (max 32MB), so archive size doesn't matter much
@@ -102,6 +103,101 @@ pub fn read_stream_to_memory(stream: &IStream) -> Result<Vec<u8>> {
 
         crate::utils::debug_log::debug_log(&format!("SUCCESS: Read {} bytes from stream", total_read));
         Ok(buffer)
+    }
+}
+
+/// IStream adapter that implements Read and Seek traits
+///
+/// This wrapper allows using Windows IStream with Rust libraries that expect
+/// std::io::Read and std::io::Seek traits (like zip, sevenz-rust).
+///
+/// # Benefits
+/// - **No memory copy**: Streams data directly from IStream
+/// - **Fast**: Avoids loading entire archive into memory
+/// - **Efficient**: Only reads what's needed for metadata and target file
+///
+/// # Example
+/// ```no_run
+/// let stream: IStream = ...; // from IInitializeWithStream
+/// let reader = IStreamReader::new(stream);
+/// let archive = ZipArchive::new(reader)?; // Direct streaming!
+/// ```
+pub struct IStreamReader {
+    stream: IStream,
+    position: u64,
+}
+
+impl IStreamReader {
+    /// Create a new IStreamReader from an IStream
+    pub fn new(stream: IStream) -> Self {
+        Self {
+            stream,
+            position: 0,
+        }
+    }
+
+    /// Get the current position in the stream
+    pub fn position(&self) -> u64 {
+        self.position
+    }
+
+    /// Get the total size of the stream
+    pub fn size(&self) -> io::Result<u64> {
+        unsafe {
+            let mut end_position = 0u64;
+            self.stream
+                .Seek(0, STREAM_SEEK_END, Some(&mut end_position))
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Seek failed: {}", e)))?;
+
+            // Seek back to current position
+            self.stream
+                .Seek(self.position as i64, STREAM_SEEK_SET, None)
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("Seek back failed: {}", e)))?;
+
+            Ok(end_position)
+        }
+    }
+}
+
+impl Read for IStreamReader {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.is_empty() {
+            return Ok(0);
+        }
+
+        unsafe {
+            let mut bytes_read = 0u32;
+            self.stream
+                .Read(
+                    buf.as_mut_ptr() as *mut _,
+                    buf.len() as u32,
+                    Some(&mut bytes_read),
+                )
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("IStream::Read failed: {}", e)))?;
+
+            self.position += bytes_read as u64;
+            Ok(bytes_read as usize)
+        }
+    }
+}
+
+impl Seek for IStreamReader {
+    fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        unsafe {
+            let (offset, origin) = match pos {
+                SeekFrom::Start(n) => (n as i64, STREAM_SEEK_SET),
+                SeekFrom::End(n) => (n, STREAM_SEEK_END),
+                SeekFrom::Current(n) => (n, STREAM_SEEK_CUR),
+            };
+
+            let mut new_position = 0u64;
+            self.stream
+                .Seek(offset, origin, Some(&mut new_position))
+                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("IStream::Seek failed: {}", e)))?;
+
+            self.position = new_position;
+            Ok(new_position)
+        }
     }
 }
 
