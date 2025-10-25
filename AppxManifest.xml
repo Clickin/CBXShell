@@ -9,14 +9,14 @@
   IgnorableNamespaces="uap uap3 rescap desktop com">
 
   <Identity
-    Name="CBXShell-rs"
-    Publisher="CN=CBXShell-rs Developer"
-    Version="5.1.0.0"
+    Name="Clickin.CBXShell-rs"
+    Publisher="CN=80480E4E-FDCA-4038-8FF8-CE4727004298"
+    Version="5.1.2.0"
     ProcessorArchitecture="neutral" />
 
   <Properties>
-    <DisplayName>CBXShell-rs - Comic Book Archive Thumbnails</DisplayName>
-    <PublisherDisplayName>CBXShell-rs</PublisherDisplayName>
+    <DisplayName>CBXShell-rs</DisplayName>
+    <PublisherDisplayName>Clickin</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>Modern Rust reimplementation of CBXShell. Windows Shell Extension that provides thumbnail preview and tooltips for ZIP and RAR image archives (CBZ/CBR formats). Memory-safe implementation with improved performance.</Description>
   </Properties>
@@ -57,6 +57,5 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
-    <rescap:Capability Name="unvirtualizedResources" />
   </Capabilities>
 </Package>
