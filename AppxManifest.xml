@@ -5,15 +5,13 @@
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  xmlns:desktop7="http://schemas.microsoft.com/appx/manifest/desktop/windows10/7"
-  xmlns:desktop9="http://schemas.microsoft.com/appx/manifest/desktop/windows10/9"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
-  IgnorableNamespaces="uap uap3 rescap desktop desktop7 desktop9 com">
+  IgnorableNamespaces="uap uap3 rescap desktop com">
 
   <Identity
     Name="CBXShell-rs"
     Publisher="CN=CBXShell-rs Developer"
-    Version="5.0.0.0"
+    Version="5.1.0.0"
     ProcessorArchitecture="neutral" />
 
   <Properties>
@@ -49,34 +47,10 @@
         <com:Extension Category="windows.comServer">
           <com:ComServer>
             <com:SurrogateServer DisplayName="CBXShell Thumbnail Handler">
-              <com:Class Id="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" Path="CBXShell.dll" ThreadingModel="STA">
-                <com:ProgId Id="CBXShell.CBXShellClass" />
-              </com:Class>
+              <com:Class Id="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" Path="CBXShell.dll" ThreadingModel="STA" />
             </com:SurrogateServer>
           </com:ComServer>
         </com:Extension>
-
-        <!-- Thumbnail Handler for CBZ files -->
-        <desktop9:Extension Category="windows.fileExplorerClassicContextMenuHandler">
-          <desktop9:ExtensionHandler>
-            <desktop9:ExtensionHandlerType Type="Microsoft.Windows.ThumbnailHandler" Clsid="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" />
-            <desktop9:SupportedFileTypes>
-              <desktop9:FileType>.cbz</desktop9:FileType>
-              <desktop9:FileType>.cbr</desktop9:FileType>
-              <desktop9:FileType>.cb7</desktop9:FileType>
-              <desktop9:FileType>.zip</desktop9:FileType>
-              <desktop9:FileType>.rar</desktop9:FileType>
-              <desktop9:FileType>.7z</desktop9:FileType>
-            </desktop9:SupportedFileTypes>
-          </desktop9:ExtensionHandler>
-        </desktop9:Extension>
-
-        <!-- Approved Shell Extension (Required for machine-level registration) -->
-        <desktop7:Extension Category="windows.appExtension" Subcategory="windows.approvedShellExtension">
-          <desktop7:ApprovedShellExtension desktop7:Scope="machine">
-            <desktop7:ShellExtension desktop7:Clsid="9E6ECB90-5A61-42BD-B851-D3297D9C7F39" />
-          </desktop7:ApprovedShellExtension>
-        </desktop7:Extension>
       </Extensions>
     </Application>
   </Applications>

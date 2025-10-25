@@ -3,6 +3,7 @@
 
 param(
     [string]$Configuration = "Release",
+    [ValidateSet("x64", "x86", "ARM64")]
     [string]$Platform = "x64",
     [string]$OutputDir = ".\dist\msix",
     [string]$CertificateThumbprint = $null
@@ -17,11 +18,21 @@ Write-Host ""
 
 # Step 1: Build Rust project
 Write-Host "[1/6] Building Rust project..." -ForegroundColor Yellow
+
+# Map Platform to Rust target triple
+$RustTarget = switch ($Platform) {
+    "x64"   { "x86_64-pc-windows-msvc" }
+    "x86"   { "i686-pc-windows-msvc" }
+    "ARM64" { "aarch64-pc-windows-msvc" }
+}
+
+Write-Host "  Building for target: $RustTarget" -ForegroundColor Gray
+
 Push-Location CBXShell
-cargo build --release
+cargo build --release --target $RustTarget
 if ($LASTEXITCODE -ne 0) {
     Pop-Location
-    throw "Cargo build failed"
+    throw "Cargo build failed for target $RustTarget"
 }
 Pop-Location
 Write-Host "  ✓ Rust build completed" -ForegroundColor Green
@@ -38,16 +49,27 @@ Write-Host "  ✓ Package directory created" -ForegroundColor Green
 
 # Step 3: Copy binaries
 Write-Host "[3/6] Copying binaries..." -ForegroundColor Yellow
-Copy-Item "target\release\CBXShell.dll" "$PackageDir\"
-Copy-Item "target\release\CBXManager.exe" "$PackageDir\"
 
-# Copy UnRAR.dll if it exists
-$UnrarPath = "target\release\unrar.dll"
-if (Test-Path $UnrarPath) {
-    Copy-Item $UnrarPath "$PackageDir\"
-    Write-Host "  ✓ UnRAR.dll included" -ForegroundColor Green
+# Determine build output path based on target
+$BuildPath = "target\$RustTarget\release"
+
+# Check if binaries exist
+$DllPath = Join-Path $BuildPath "CBXShell.dll"
+$ExePath = Join-Path $BuildPath "CBXManager.exe"
+
+if (-not (Test-Path $DllPath)) {
+    throw "CBXShell.dll not found at $DllPath"
 }
-Write-Host "  ✓ Binaries copied" -ForegroundColor Green
+if (-not (Test-Path $ExePath)) {
+    throw "CBXManager.exe not found at $ExePath"
+}
+
+Copy-Item $DllPath "$PackageDir\"
+Copy-Item $ExePath "$PackageDir\"
+
+Write-Host "  ✓ Binaries copied from $BuildPath" -ForegroundColor Green
+
+# Note: UnRAR.dll is statically linked, no need to copy
 
 # Step 4: Copy manifest and assets
 Write-Host "[4/6] Copying manifest and assets..." -ForegroundColor Yellow
@@ -57,7 +79,7 @@ Write-Host "  ✓ Manifest and assets copied" -ForegroundColor Green
 
 # Step 5: Create MSIX package
 Write-Host "[5/6] Creating MSIX package..." -ForegroundColor Yellow
-$MsixPath = Join-Path $OutputDir "CBXShell_5.0.0.0_$Platform.msix"
+$MsixPath = Join-Path $OutputDir "CBXShell_5.1.0.0_$Platform.msix"
 $MakeAppxPath = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\10.0.22621.0\x64\makeappx.exe"
 
 if (-not (Test-Path $MakeAppxPath)) {
