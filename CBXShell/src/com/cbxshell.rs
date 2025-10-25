@@ -198,7 +198,17 @@ impl IThumbnailProvider_Impl for CBXShell {
                 crate::utils::debug_log::debug_log(&format!("SUCCESS: GetThumbnail completed - HBITMAP: {:?} (handle: 0x{:x})",
                     hbitmap, hbitmap.0 as usize));
 
-                // Write HBITMAP to output parameter
+                // UNAVOIDABLE UNSAFE: Writing to COM output parameters
+                // Why unsafe is required:
+                // 1. COM out parameters: phbmp and pdwalpha are raw pointers from COM caller
+                // 2. Standard COM pattern: IThumbnailProvider interface specification
+                // 3. No safe alternative: COM ABI requires raw pointer mutation
+                //
+                // Safety guarantees:
+                // - phbmp validated as non-null above (line 189)
+                // - pdwalpha null-checked before dereferencing
+                // - hbitmap is valid (created by our code)
+                // - COM caller is responsible for pointer validity (COM contract)
                 unsafe {
                     *phbmp = hbitmap;
 

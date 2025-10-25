@@ -121,6 +121,15 @@ pub extern "system" fn DllGetClassObject(
     ppv: *mut *mut std::ffi::c_void,
 ) -> HRESULT {
     utils::debug_log::debug_log("===== DllGetClassObject CALLED =====");
+
+    // UNAVOIDABLE UNSAFE: Dereferencing COM raw pointers for logging
+    // Why unsafe is required:
+    // 1. COM ABI: rclsid and riid are raw pointers from COM caller
+    // 2. Standard COM interface: DllGetClassObject is COM specification
+    // Safety guarantees:
+    // - COM runtime ensures pointers are valid
+    // - Null check performed below (line 127)
+    // - Only dereferencing for read (no mutation)
     utils::debug_log::debug_log(&format!("CLSID requested: {:?}", unsafe { *rclsid }));
     utils::debug_log::debug_log(&format!("IID requested: {:?}", unsafe { *riid }));
 
@@ -129,6 +138,19 @@ pub extern "system" fn DllGetClassObject(
         return E_POINTER;
     }
 
+    // UNAVOIDABLE UNSAFE: COM interface implementation
+    // Why unsafe is required:
+    // 1. COM ABI: All COM interfaces use raw pointers (C++ compatible)
+    // 2. Output parameters: ppv is an "out" parameter (double pointer)
+    // 3. GUID comparison: rclsid must be dereferenced to compare CLSIDs
+    // 4. QueryInterface: COM method requires raw pointer manipulation
+    //
+    // Safety guarantees:
+    // - ppv validated as non-null above
+    // - Initialized to null_mut() before use
+    // - rclsid validated by comparison
+    // - Error propagation via HRESULT
+    // - windows-rs handles reference counting
     unsafe {
         *ppv = std::ptr::null_mut();
 

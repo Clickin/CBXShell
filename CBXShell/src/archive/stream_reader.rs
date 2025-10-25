@@ -34,6 +34,17 @@ const MAX_STREAM_SIZE: usize = 10 * 1024 * 1024 * 1024;
 pub fn read_stream_to_memory(stream: &IStream) -> Result<Vec<u8>> {
     crate::utils::debug_log::debug_log(">>>>> read_stream_to_memory STARTING <<<<<");
 
+    // UNAVOIDABLE UNSAFE: IStream COM interface operations
+    // Why unsafe is required:
+    // 1. COM interface: IStream is a COM interface (C++ vtable calls)
+    // 2. Raw pointer buffer: Read() requires raw pointer to buffer
+    // 3. FFI calls: Seek/Read are C++ methods, not Rust-safe
+    //
+    // Safety guarantees:
+    // - stream is validated (non-null) by type system
+    // - Buffer allocated with correct size
+    // - Read size checked (bytes_read validation)
+    // - Total size limited (MAX_STREAM_SIZE = 10GB)
     unsafe {
         // Step 1: Seek to end to get stream size
         let mut new_position = 0u64;
@@ -165,6 +176,16 @@ impl Read for IStreamReader {
             return Ok(0);
         }
 
+        // UNAVOIDABLE UNSAFE: IStream::Read is a COM method
+        // Why unsafe is required:
+        // 1. COM method call: IStream::Read uses C++ vtable
+        // 2. Raw buffer pointer: COM API requires *mut c_void
+        // 3. No safe alternative: This adapter enables using zip/7z crates
+        //
+        // Safety guarantees:
+        // - buf is valid mutable slice (Rust guarantees)
+        // - Buffer size passed correctly (buf.len())
+        // - bytes_read validated before use
         unsafe {
             let mut bytes_read = 0u32;
             self.stream
@@ -183,6 +204,14 @@ impl Read for IStreamReader {
 
 impl Seek for IStreamReader {
     fn seek(&mut self, pos: SeekFrom) -> io::Result<u64> {
+        // UNAVOIDABLE UNSAFE: IStream::Seek is a COM method
+        // Why unsafe is required:
+        // 1. COM method call: IStream::Seek uses C++ vtable
+        // 2. No safe alternative: Required for archive reading
+        //
+        // Safety guarantees:
+        // - stream is valid (owned by self)
+        // - new_position properly initialized and checked
         unsafe {
             let (offset, origin) = match pos {
                 SeekFrom::Start(n) => (n as i64, STREAM_SEEK_SET),
