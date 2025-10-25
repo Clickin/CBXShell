@@ -71,8 +71,10 @@ mod decoder;
 mod hbitmap;
 mod resizer;
 pub mod thumbnail;
+pub mod magic;
 
 // Re-export public API (used by thumbnail module internally)
+pub use magic::{detect_image_format, verify_image_format, is_image_data, ImageFormat};
 
 /// Supported image file extensions
 ///
