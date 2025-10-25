@@ -99,6 +99,25 @@ pub fn create_hbitmap_from_bgra(
         )));
     }
 
+    // UNAVOIDABLE UNSAFE: CreateDIBSection and raw memory operations
+    // Why unsafe is required:
+    // 1. CreateDIBSection is a Windows GDI FFI call (gdi32.dll)
+    // 2. No safe alternative: HBITMAP is a Windows-specific resource
+    // 3. Raw pointer manipulation: pv_bits is allocated by Windows
+    // 4. Memory copy to unmanaged memory: Windows owns the DIB pixel buffer
+    //
+    // Why this cannot be made safe:
+    // - CreateDIBSection returns a raw pointer (pv_bits) to Windows-managed memory
+    // - We must write pixel data to this Windows-allocated buffer
+    // - Even if we create a slice, it still requires unsafe (same safety requirements)
+    // - The memory ownership is split: HBITMAP handle vs pixel buffer
+    //
+    // Safety guarantees:
+    // - Dimensions validated (width, height > 0)
+    // - Data size validated (matches width * height * 4)
+    // - pv_bits null-checked before use
+    // - HBITMAP validity checked before returning
+    // - copy_nonoverlapping: src and dst are valid, non-overlapping, properly aligned
     unsafe {
         // Create BITMAPINFO structure
         // Using BITMAPV5HEADER for better alpha channel support
