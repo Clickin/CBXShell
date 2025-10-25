@@ -45,3 +45,9 @@ Assets/*.ico
 .git.old/
 .claude/
 CLAUDE.md
+
+# AI-generated documentation (Claude Code reports)
+/aidocs/
+*.analysis.md
+*_ANALYSIS.md
+*_OPTIMIZATION.md
