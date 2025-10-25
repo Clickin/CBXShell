@@ -7,13 +7,12 @@ Modern Windows Shell Extension for ZIP/RAR/7z comic book archive thumbnail previ
 ## Features
 
 - **Modern Windows Integration**: Uses IThumbnailProvider for native Windows Vista+ compatibility
-- **Multi-Format Support**: ZIP, RAR, 7z archives (.cbz, .cbr, .cb7, .epub, .phz)
+- **Multi-Format Support**: ZIP, RAR, 7z archives (.cbz, .cbr, .cb7)
 - **Modern Image Formats**: JPEG, PNG, GIF, BMP, TIFF, ICO, **WebP**, **AVIF**
 - **Pure Rust**: Memory-safe implementation using `windows-rs`
 - **High-Quality Thumbnails**: Advanced resizing with `fast_image_resize` for crisp previews
 - **Shell Integration**: Thumbnail previews and tooltips in Windows Explorer
 - **Stream-Based Processing**: Efficient IInitializeWithStream for better performance
-- **Per-User Installation**: No administrator rights required
 - **Natural Sorting**: Alphabetical image sorting with logical number ordering
 
 ## Building
@@ -55,13 +54,6 @@ Download and install CBXShell directly from the Microsoft Store for automatic up
 ### Option 2: NSIS Installer (GitHub Releases)
 
 Download the latest `CBXShell-Setup-x.x.x.exe` from the [Releases](https://github.com/yourusername/cbxshell/releases) page.
-
-**Features:**
-- Automatic architecture detection (32-bit/64-bit)
-- One-click installation
-- Start Menu shortcuts
-- Automatic COM registration
-- Easy uninstallation via Add/Remove Programs
 
 **Installation Steps:**
 1. Download `CBXShell-Setup-x.x.x.exe`
@@ -266,8 +258,6 @@ Features:
 - **Handler Management**: Enable/disable thumbnail and tooltip handlers per file type
 - **Format Selection**: Choose which archive formats to handle (CBZ, CBR, CB7, ZIP, RAR, 7Z)
 - **Sorting Options**: Configure alphabetical vs. discovery order for images
-- **Registry Operations**: Safe per-user registry modifications
-- **Real-time Preview**: See changes without Explorer restart
 
 The manager provides a clean, modern interface for customizing CBXShell behavior without manual registry editing.
 
