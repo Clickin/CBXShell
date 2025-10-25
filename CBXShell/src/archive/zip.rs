@@ -4,7 +4,7 @@
 
 use std::cell::RefCell;
 use std::fs::File;
-use std::io::{BufReader, Cursor, Read};
+use std::io::{BufReader, Cursor, Read, Seek};
 use std::path::{Path, PathBuf};
 use zip::ZipArchive as ZipReader;
 

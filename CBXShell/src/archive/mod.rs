@@ -14,17 +14,19 @@ pub mod stream_reader;
 
 // Re-export utilities for internal use only (not used in public API)
 pub use config::should_sort_images;
+
+// Re-export image verification function (used by COM shell extension)
 pub use utils::verify_image_data;
+
 #[allow(dead_code)] // Used by open_archive function and part of public API
 pub use zip::ZipArchive;
 #[allow(dead_code)] // Used by open_archive function and part of public API
 pub use sevenz::SevenZipArchive;
 #[allow(dead_code)] // Used by open_archive function and part of public API
 pub use rar::RarArchive;
-pub use stream_reader::{read_stream_to_memory, detect_archive_type_from_bytes, IStreamReader};
 
-// Re-export optimized archive opening function
-pub use self::open_archive_from_stream;
+// Re-export stream reader utilities (detect_archive_type_from_bytes is used publicly)
+pub use stream_reader::{detect_archive_type_from_bytes, IStreamReader};
 
 /// Represents an entry in an archive
 #[derive(Debug, Clone)]
@@ -191,7 +193,7 @@ pub fn open_archive_from_memory(data: Vec<u8>) -> Result<Box<dyn Archive>> {
 pub fn open_archive_from_stream<R: std::io::Read + std::io::Seek + 'static>(
     mut reader: R
 ) -> Result<Box<dyn Archive>> {
-    use std::io::{Read, Seek, SeekFrom};
+    use std::io::SeekFrom;
 
     crate::utils::debug_log::debug_log(">>>>> open_archive_from_stream STARTING (OPTIMIZED) <<<<<");
 

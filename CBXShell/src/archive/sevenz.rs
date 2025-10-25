@@ -594,12 +594,8 @@ impl<R: Read + Seek> SevenZipArchiveFromStream<R> {
         })
     }
 
-    /// Create a new reader by seeking back to start
-    ///
-    /// This borrows the internal reader mutably via RefCell and seeks
-    /// to the start, then creates a SevenZReader. The reader will parse
-    /// the 7z headers, which takes ~20-50ms for a 1GB file.
-    fn create_reader(&self) -> Result<SevenZReader<std::cell::RefMut<R>>> {
+    /// List all entries in archive (helper method)
+    fn list_entries(&self) -> Result<Vec<ArchiveEntry>> {
         use std::io::SeekFrom;
 
         let mut reader_ref = self.reader.borrow_mut();
@@ -609,13 +605,9 @@ impl<R: Read + Seek> SevenZipArchiveFromStream<R> {
             .map_err(|e| CbxError::Archive(format!("Failed to seek to start: {}", e)))?;
 
         let password = Password::empty();
-        SevenZReader::new(reader_ref, self.size, password)
-            .map_err(|e| CbxError::Archive(format!("Failed to create 7z reader: {}", e)))
-    }
+        let mut archive = SevenZReader::new(&mut *reader_ref, self.size, password)
+            .map_err(|e| CbxError::Archive(format!("Failed to create 7z reader: {}", e)))?;
 
-    /// List all entries in archive (helper method)
-    fn list_entries(&self) -> Result<Vec<ArchiveEntry>> {
-        let mut archive = self.create_reader()?;
         let mut entries = Vec::new();
 
         archive
@@ -645,9 +637,19 @@ impl<R: Read + Seek> Archive for SevenZipArchiveFromStream<R> {
 
         if !sort {
             // OPTIMIZATION: Fast path - find first image without full listing
+            use std::io::SeekFrom;
             tracing::debug!("7z stream: Fast path - finding first image");
 
-            let mut archive = self.create_reader()?;
+            let mut reader_ref = self.reader.borrow_mut();
+
+            // Seek to start
+            reader_ref.seek(SeekFrom::Start(0))
+                .map_err(|e| CbxError::Archive(format!("Failed to seek to start: {}", e)))?;
+
+            let password = Password::empty();
+            let mut archive = SevenZReader::new(&mut *reader_ref, self.size, password)
+                .map_err(|e| CbxError::Archive(format!("Failed to create 7z reader: {}", e)))?;
+
             let mut first_image: Option<ArchiveEntry> = None;
 
             archive
@@ -709,7 +711,18 @@ impl<R: Read + Seek> Archive for SevenZipArchiveFromStream<R> {
         }
 
         // Create a new reader for extraction
-        let mut archive = self.create_reader()?;
+        use std::io::SeekFrom;
+
+        let mut reader_ref = self.reader.borrow_mut();
+
+        // Seek to start
+        reader_ref.seek(SeekFrom::Start(0))
+            .map_err(|e| CbxError::Archive(format!("Failed to seek to start: {}", e)))?;
+
+        let password = Password::empty();
+        let mut archive = SevenZReader::new(&mut *reader_ref, self.size, password)
+            .map_err(|e| CbxError::Archive(format!("Failed to create 7z reader: {}", e)))?;
+
         let mut extracted_data = None;
 
         archive

@@ -188,13 +188,19 @@ impl Read for IStreamReader {
         // - bytes_read validated before use
         unsafe {
             let mut bytes_read = 0u32;
-            self.stream
+            let hr = self.stream
                 .Read(
                     buf.as_mut_ptr() as *mut _,
                     buf.len() as u32,
                     Some(&mut bytes_read),
-                )
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("IStream::Read failed: {}", e)))?;
+                );
+
+            if hr.is_err() {
+                return Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    format!("IStream::Read failed: {:?}", hr),
+                ));
+            }
 
             self.position += bytes_read as u64;
             Ok(bytes_read as usize)
