@@ -14,6 +14,7 @@ Modern Windows Shell Extension for ZIP/RAR/7z comic book archive thumbnail previ
 - **Shell Integration**: Thumbnail previews and tooltips in Windows Explorer
 - **Stream-Based Processing**: Efficient IInitializeWithStream for better performance
 - **Natural Sorting**: Alphabetical image sorting with logical number ordering
+- **Large File Support**: Handles archives up to 10GB with individual image files up to 32MB
 
 ## Building
 
@@ -30,12 +31,12 @@ Modern Windows Shell Extension for ZIP/RAR/7z comic book archive thumbnail previ
 git clone https://github.com/Clickin/CBXShell-rs.git
 cd CBXShell-rs
 
-# Build release version
+# Build release version (defaults to host architecture)
 cargo build --release
 
-# Build for both x64 and x86
-cargo build --release --target x86_64-pc-windows-msvc
-cargo build --release --target i686-pc-windows-msvc
+# Build for specific architectures
+cargo build --release --target x86_64-pc-windows-msvc  # x64
+cargo build --release --target aarch64-pc-windows-msvc # ARM64
 
 # Run tests
 cargo test
@@ -53,13 +54,27 @@ Download and install CBXShell directly from the Microsoft Store for automatic up
 
 ### Option 2: NSIS Installer (GitHub Releases)
 
-Download the latest `CBXShell-Setup-x.x.x.exe` from the [Releases](https://github.com/yourusername/cbxshell/releases) page.
+Download the appropriate installer for your system from the [latest release](https://github.com/Clickin/CBXShell-rs/releases/latest):
+
+- **x64 (Intel/AMD 64-bit)**: `CBXShell-rs-Setup-x.x.x-x64.exe` - Most Windows PCs
+- **ARM64 (Windows on ARM)**: `CBXShell-rs-Setup-x.x.x-ARM64.exe` - Surface Pro X, Windows Dev Kit 2023
+
+**How to check your system architecture:**
+```powershell
+# Run in PowerShell
+$env:PROCESSOR_ARCHITECTURE
+# Output: AMD64 (x64) or ARM64
+```
 
 **Installation Steps:**
-1. Download `CBXShell-Setup-x.x.x.exe`
+1. Download the correct installer for your architecture
 2. Run the installer (requires administrator privileges)
 3. Select which file formats to enable (CBZ, CBR, ZIP, RAR, 7Z)
 4. Restart Windows Explorer when prompted
+
+**System Requirements:**
+- Windows 10 or later (64-bit)
+- For Windows on ARM: Windows 11 or later
 
 ### Option 3: Manual Installation (Advanced Users)
 

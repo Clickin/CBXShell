@@ -2,7 +2,7 @@
 ; Provides thumbnail previews for comic book archives (CBZ/CBR/CB7)
 ;
 ; Build with: makensis.exe /DARCH=x64 installer.nsi
-;         or: makensis.exe /DARCH=x86 installer.nsi
+;         or: makensis.exe /DARCH=ARM64 installer.nsi
 
 !include "MUI2.nsh"
 !include "x64.nsh"
@@ -10,26 +10,24 @@
 
 ;--------------------------------
 ; Architecture Configuration
-; Must be passed via command line: /DARCH=x64 or /DARCH=x86
+; Must be passed via command line: /DARCH=x64 or /DARCH=ARM64
 
 !ifndef ARCH
-  !error "ARCH must be defined! Use /DARCH=x64 or /DARCH=x86"
+  !error "ARCH must be defined! Use /DARCH=x64 or /DARCH=ARM64"
 !endif
 
 !if "${ARCH}" == "x64"
   !define ARCH_NAME "x64"
   !define ARCH_BITS "64-bit"
-  !define BUILD_DIR "target\release"
-  !define UNRAR_DLL "UnRAR64.dll"
+  !define BUILD_DIR "target\x86_64-pc-windows-msvc\release"
   !define PROGRAMFILES_DIR "$PROGRAMFILES64"
-!else if "${ARCH}" == "x86"
-  !define ARCH_NAME "x86"
-  !define ARCH_BITS "32-bit"
-  !define BUILD_DIR "target\release"
-  !define UNRAR_DLL "UnRAR.dll"
-  !define PROGRAMFILES_DIR "$PROGRAMFILES32"
+!else if "${ARCH}" == "ARM64"
+  !define ARCH_NAME "ARM64"
+  !define ARCH_BITS "ARM64 (64-bit)"
+  !define BUILD_DIR "target\aarch64-pc-windows-msvc\release"
+  !define PROGRAMFILES_DIR "$PROGRAMFILES64"
 !else
-  !error "Invalid ARCH value! Must be x64 or x86"
+  !error "Invalid ARCH value! Must be x64 or ARM64"
 !endif
 
 ;--------------------------------
@@ -100,7 +98,13 @@ Function .onInit
 !if "${ARCH}" == "x64"
   ; Check if running on 64-bit Windows
   ${IfNot} ${RunningX64}
-    MessageBox MB_OK|MB_ICONSTOP "This is a 64-bit installer and requires 64-bit Windows.$\n$\nPlease download the 32-bit installer (x86) instead."
+    MessageBox MB_OK|MB_ICONSTOP "This is a 64-bit installer and requires 64-bit Windows.$\n$\nPlease visit https://github.com/Clickin/CBXShell-rs/releases for more information."
+    Abort
+  ${EndIf}
+!else if "${ARCH}" == "ARM64"
+  ; Check if running on ARM64 Windows
+  ${IfNot} ${IsNativeARM64}
+    MessageBox MB_OK|MB_ICONSTOP "This is an ARM64 installer and requires ARM64 Windows.$\n$\nPlease download the x64 installer instead."
     Abort
   ${EndIf}
 !endif
@@ -160,15 +164,7 @@ Section "CBXShell (Required)" SecCore
   Push "$INSTDIR\CBXShell.dll"
   Call RegisterDLL
 
-  ; Install UnRAR.dll for the target architecture
-  DetailPrint "Installing ${UNRAR_DLL}..."
-  IfFileExists "${BUILD_DIR}\${UNRAR_DLL}" 0 skip_unrar
-  File /oname=UnRAR.dll "${BUILD_DIR}\${UNRAR_DLL}"
-  DetailPrint "UnRAR.dll installed successfully"
-  Goto unrar_done
-skip_unrar:
-  DetailPrint "Warning: ${UNRAR_DLL} not found, RAR support may not work"
-unrar_done:
+  ; Note: UnRAR support is statically linked via unrar crate, no separate DLL needed
 
   ; Create registry entries for shell extension settings
   WriteRegDWORD HKCU "${PRODUCT_SETTINGS_KEY}" "NoSort" 0
@@ -291,7 +287,6 @@ Section "Uninstall"
   ; Remove files
   Delete "$INSTDIR\CBXShell.dll"
   Delete "$INSTDIR\CBXManager.exe"
-  Delete "$INSTDIR\UnRAR.dll"
   Delete "$INSTDIR\README.md"
   Delete "$INSTDIR\LICENSE.txt"
   Delete "$INSTDIR\CLAUDE.md"
