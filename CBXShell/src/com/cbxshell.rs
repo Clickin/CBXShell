@@ -67,11 +67,11 @@ impl CBXShell {
     /// * `Ok(HBITMAP)` - Successfully created thumbnail
     /// * `Err(CbxError)` - Failed to extract or create thumbnail
     fn extract_thumbnail_internal(&self, cx: u32) -> crate::utils::error::Result<HBITMAP> {
-        use crate::archive::{open_archive_from_memory, read_stream_to_memory, should_sort_images};
+        use crate::archive::{open_archive_from_stream, IStreamReader, should_sort_images};
         use crate::image_processor::thumbnail::create_thumbnail_with_size;
         use crate::utils::error::CbxError;
 
-        crate::utils::debug_log::debug_log(">>>>> extract_thumbnail_internal STARTING <<<<<");
+        crate::utils::debug_log::debug_log(">>>>> extract_thumbnail_internal STARTING (OPTIMIZED STREAMING) <<<<<");
         crate::utils::debug_log::debug_log(&format!("Requested thumbnail size: {}x{}", cx, cx));
 
         // Step 1: Get IStream from IInitializeWithStream
@@ -81,20 +81,20 @@ impl CBXShell {
                 CbxError::Archive("No stream initialized".to_string())
             })?;
 
-        tracing::info!("Extracting thumbnail from IStream");
+        tracing::info!("Extracting thumbnail from IStream (streaming mode)");
         crate::utils::debug_log::debug_log("Step 1: IStream retrieved successfully");
 
-        // Step 2: Read archive data from stream
-        crate::utils::debug_log::debug_log("Step 2: Reading archive data from stream...");
-        let archive_data = read_stream_to_memory(&stream)?;
-        tracing::debug!("Read {} bytes from stream", archive_data.len());
-        crate::utils::debug_log::debug_log(&format!("Step 2: Read {} bytes from stream", archive_data.len()));
+        // Step 2: Create streaming reader (NO MEMORY COPY!)
+        crate::utils::debug_log::debug_log("Step 2: Creating streaming reader (OPTIMIZED)...");
+        let reader = IStreamReader::new(stream);
+        tracing::debug!("IStreamReader created for direct streaming");
+        crate::utils::debug_log::debug_log("Step 2: IStreamReader created - ready for streaming");
 
-        // Step 3: Open archive from memory
-        crate::utils::debug_log::debug_log("Step 3: Opening archive from memory...");
-        let archive = open_archive_from_memory(archive_data)?;
-        tracing::debug!("Archive opened successfully from memory");
-        crate::utils::debug_log::debug_log("Step 3: Archive opened successfully");
+        // Step 3: Open archive from stream (OPTIMIZED!)
+        crate::utils::debug_log::debug_log("Step 3: Opening archive from stream (NO FULL LOAD)...");
+        let archive = open_archive_from_stream(reader)?;
+        tracing::debug!("Archive opened successfully from stream");
+        crate::utils::debug_log::debug_log("Step 3: Archive opened successfully in streaming mode");
 
         // Step 4: Read sort preference from registry
         let sort = should_sort_images();
@@ -112,6 +112,12 @@ impl CBXShell {
         let image_data = archive.extract_entry(&entry)?;
         tracing::debug!("Extracted {} bytes of image data", image_data.len());
         crate::utils::debug_log::debug_log(&format!("Step 6: Extracted {} bytes of image data", image_data.len()));
+
+        // Step 6b: Verify image format using magic headers
+        crate::utils::debug_log::debug_log("Step 6b: Verifying image format with magic headers...");
+        use crate::archive::utils::verify_image_data;
+        verify_image_data(&image_data, &entry.name)?;
+        crate::utils::debug_log::debug_log("Step 6b: Image format verification passed");
 
         // Step 7: Use requested size from IThumbnailProvider::GetThumbnail
         // IThumbnailProvider provides cx (max dimension), we create square thumbnails

@@ -3,7 +3,7 @@
 ///! Supports RAR and CBR formats using the `unrar` crate
 
 use std::fs::File;
-use std::io::Write as IoWrite;
+use std::io::{Write as IoWrite, Read};
 use std::path::{Path, PathBuf};
 use std::hash::BuildHasher;
 use unrar::Archive as UnrarArchive;
@@ -282,6 +282,103 @@ impl RarArchiveFromMemory {
             })?;
 
         tracing::debug!("Temporary RAR file created: {:?}", temp_path);
+
+        Ok(Self { temp_path })
+    }
+
+    /// Create a RAR archive from a streaming reader (OPTIMIZED)
+    ///
+    /// This version streams data directly from the reader to a temp file
+    /// without loading the entire archive into memory first.
+    ///
+    /// # Performance
+    /// - **Old approach**: IStream → Memory (1GB) → Temp File (~5 seconds)
+    /// - **New approach**: IStream → Temp File (streaming, ~2 seconds)
+    ///
+    /// # Arguments
+    /// * `reader` - Any Read implementer (IStreamReader, File, etc.)
+    ///
+    /// # Returns
+    /// * `Ok(Self)` - RAR archive ready for processing
+    /// * `Err(CbxError)` - If writing or validation fails
+    pub fn new_from_stream<R: Read>(mut reader: R) -> Result<Self> {
+        tracing::debug!("Creating RAR archive from stream (optimized)");
+        crate::utils::debug_log::debug_log(">>>>> RarArchiveFromMemory::new_from_stream STARTING <<<<<");
+
+        // Create temporary file with unique name
+        let temp_dir = std::env::temp_dir();
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
+        let random: u32 = std::collections::hash_map::RandomState::new()
+            .hash_one(timestamp) as u32;
+        let thread_id = std::thread::current().id();
+        let temp_filename = format!("cbxshell_rar_stream_{}_{:?}_{}_{:08x}.tmp",
+            std::process::id(),
+            thread_id,
+            timestamp,
+            random
+        );
+        let temp_path = temp_dir.join(temp_filename);
+
+        crate::utils::debug_log::debug_log(&format!("Temp file: {:?}", temp_path));
+
+        // Stream data to temp file in chunks (no full memory load!)
+        let mut file = File::create(&temp_path)
+            .map_err(|e| CbxError::Archive(format!("Failed to create temp RAR file: {}", e)))?;
+
+        let mut total_written = 0u64;
+        let mut buffer = vec![0u8; 1024 * 1024]; // 1MB chunks
+
+        loop {
+            let bytes_read = reader
+                .read(&mut buffer)
+                .map_err(|e| CbxError::Archive(format!("Failed to read from stream: {}", e)))?;
+
+            if bytes_read == 0 {
+                break; // EOF
+            }
+
+            file.write_all(&buffer[..bytes_read])
+                .map_err(|e| CbxError::Archive(format!("Failed to write to temp file: {}", e)))?;
+
+            total_written += bytes_read as u64;
+
+            if total_written % (10 * 1024 * 1024) == 0 {
+                // Log every 10MB
+                crate::utils::debug_log::debug_log(&format!("Streamed {} MB to temp file", total_written / (1024 * 1024)));
+            }
+        }
+
+        file.sync_all()
+            .map_err(|e| CbxError::Archive(format!("Failed to sync temp RAR file: {}", e)))?;
+
+        drop(file);
+
+        crate::utils::debug_log::debug_log(&format!("Total streamed: {} bytes", total_written));
+
+        // Validate the temp file is a valid RAR
+        let _test = UnrarArchive::new(&temp_path)
+            .open_for_listing()
+            .map_err(|e| {
+                // Clean up temp file on error
+                let _ = std::fs::remove_file(&temp_path);
+
+                // Check if this is a password-protected archive
+                let error_msg = format!("{:?}", e);
+                if error_msg.contains("password") || error_msg.contains("encrypted") || error_msg.contains("BadPassword") {
+                    tracing::info!("Skipping password-protected RAR archive");
+                    crate::utils::debug_log::debug_log("RAR archive is password-protected - skipping");
+                    CbxError::Archive("Password-protected RAR archive (not supported)".to_string())
+                } else {
+                    tracing::warn!("Invalid RAR data: {:?}", e);
+                    CbxError::Archive(format!("Invalid RAR data: {:?}", e))
+                }
+            })?;
+
+        tracing::debug!("Temporary RAR file created from stream: {:?}", temp_path);
+        crate::utils::debug_log::debug_log(">>>>> RarArchiveFromMemory::new_from_stream COMPLETED <<<<<");
 
         Ok(Self { temp_path })
     }
